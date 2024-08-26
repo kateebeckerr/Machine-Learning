@@ -1,0 +1,83 @@
+---
+title: "What is a model?"
+author: "Kate Becker"
+date: "2024-08-26"
+output: html_document
+---
+
+```{r}
+library(tidyverse)
+library(janitor)
+```
+
+A Model is any sort of function that has predictive power 
+
+```{r}
+head(mtcars)
+```
+- Columns of data are called features 
+
+Examining if theres a relationship between the cars fuel efficiency and any of the features 
+
+```{r}
+# matrix of scatterplots if producted with pairs()
+# lower.panel separate panel functions to be used above diaganol
+# clearly nothing in the cyl row look like they help for simple regression modelling
+pairs(mtcars[1:7], lower.panel = NULL)
+```
+- MPG as a function of cycl looks very different from mpg as a function of wt 
+
+```{r}
+plot(y = mtcars$mpg, x = mtcars$wt, xlab = "Vehicle Weight", ylab = "Vehicle Fuel Efficiency in Miles per Gallon")
+```
+From this kind of data format, we can extract a best fit to all the data points and turn this plot into an equation. 
+
+Using a function to model the value were interested in, called a response, against other features in the dataset
+
+```{r}
+mt.model <- lm(formula = mpg ~ wt, data = mtcars)
+mt.model
+```
+```{r}
+coef(mt.model)[2]
+coef(mt.model[1])
+```
+
+Now we have predictive power given some kind of input that can give us a value for any number we put in but there may be error in data or observation. 
+
+# Algorithms
+
+An algorithm is a set of steps performed in order 
+- Simplest: linear regression, involves putting two points on a plot and then drawing a line between them you get the important parts of the question (slope and intercept) by taking the difference in the coordinates of those points with respect to some origin 
+- this gets more complicated with more than two points though so need more complex systems that humans cant do to do this 
+- Algorithsm are the underpinnings of simple R code 
+
+# 3 major types of models: 
+- Regression models 
+- Classification models
+- Mixed models (Combo of both)
+
+# Classificaiton models 
+- Take input data and arrange it according to a type, class, group, or other discrete output 
+
+# Mixed models
+- Start with a regression model and then use output from that to help to classify other types of data and the reverse can be true 
+- lm(y~x) "give me the lienar model for the variable y as a function of the feature x"
+
+Function: object that has some processing power, sits inside model
+Model: complex object that takes an input parameter and gives an output 
+Equation: mathematical representation of a funciton 
+Algorithm: set of steps passed into a model for calculating or processing 
+- the lm() is a function itself, but also a linear model 
+  - calls a series of algorithms to find best values that are then output as a slope and an intercept 
+  
+  All models are wrong like the mtcars data isnt comparable to data we have now
+  
+  Coefficient of determination: measure of how close the data fits the model fitted line with values ranging from 0 to 1 
+  
+- 
+
+```{r}
+
+```
+
