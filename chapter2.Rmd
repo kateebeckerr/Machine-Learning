@@ -1,0 +1,58 @@
+---
+title: "Supervised and Unsupervised Machine Learning"
+author: "Kate Becker"
+date: "2024-08-27"
+output: html_document
+---
+
+# In general: 
+## Supervised learning models
+- A machine learning model is scored and tuned against some sort of known quantity 
+- Majority of machine learning algorithms are supervised learners 
+
+Ex: built a model that says "any business that sells less than 10- units is a poor performer and more than 10 units is a good performer, we then have a set of data we want to test against that statement, suppose we have a set of data that sells 8 units this is less than 10 so therefore classifed as a poor performer 
+- in this situation we have a model that ingests data in which were interested and gives us an output as decided by the conditions in the model 
+
+## Unsupervised learning models:
+- machine learning models derives patterns and information from data while determining
+the known quantity tuning parameter itself 
+ex: we have a bunch of data and want to know how to separate it into meaningful groups, we could have a bunch of data about peoples heights and weights, can use algorithms in the unsueprvised branch to figure out a way to group the data into meaningful clusters for which we might define clothing size
+- in this case the model doesnty have an answer telling it "for this persons given height and wight, I should classify them as a small pant size" it must figure that out for itsef 
+
+# Supervised 
+
+# 3 major flavors 
+### Regression 
+- Very commong models, primarily used for looking at how data volves with respect to another variable (time) and examining what you can do to predict values in the future
+
+### Classification 
+- Used to reorganize data into schemes that make categorical sense, consider the aforementioned store labeling examples - stores that sell more than 10 units per week cold be classified as good performers, whereas those selling fewer than that number would be classified as poor 
+
+### Mixed
+- These models can often rely on parts of regression to inform how to do classification or sometimes the opposite. One case might be looking at sales data over time and wheher there is a rapid change in the slope of the line in some time period. 
+
+
+# Regression
+- We fit data that has an x and y elemnent, use an equation to predict what the correspodning output,y, should be for any given output x  (always done on numeric data)
+```{r}
+head(mtcars)
+#11 features 
+
+plot(y = mtcars$mpg, x = mtcars$disp, xlab = "Engine size (cubic inches)", ylab = "Fuel efficiency (miles per gallon)")
+# Fuel efficiency decreases as the size of the engine increases but if you have some new engine for which you want know the efficiency it doesnt give you an exact answer 
+
+model <- lm(mtcars$mpg ~ mtcars$disp)
+coef(model)
+```
+*fuel efficiency = -0.041 x engine size + 29.599 
+
+or call coefficients from the model directly
+
+```{r}
+coef(model)[2] * 200 + coef(model)[1]
+```
+
+```{r}
+
+```
+
