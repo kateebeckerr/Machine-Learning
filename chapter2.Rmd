@@ -52,7 +52,89 @@ or call coefficients from the model directly
 coef(model)[2] * 200 + coef(model)[1]
 ```
 
-```{r}
+# Training and Testing Data
+- One way to determine model accuracy is to look at R-squared value from a model:
 
+```{r}
+summary(model)
 ```
 
+The accuracy parameter that's most important is **adjusted R^2** that tells us how linearly correlated the data is, the closer the value is to one, the more likely the model output is governed by data that's almost exactly a straight line with some kind of slope to its value. 
+- not focused on multiple is for future scenarios in which we use more features in a model, for low number of features the adjusted and multiple R squared values are basically the same
+- for models with many features we want to use multiple r^2 values instead becasue it will give a more accurate assessment of the model errors if we have many dependant features instead of just one 
+- for error estimate of the mode: 
+  - we have standard error values from the output, but theres an issue with the model being trained on all of the data, then being tested on the same data 
+- in order to ensure an unbiased amount of error, must split our data into training and testing
+- split 80% training and 20% testing (always want more training than testing data)
+```{r}
+split_size = 0.8
+sample_size = floor(split_size * nrow(mtcars)) # floor() takes a simple numeric argument x and returns a numeric vector containing the integers formed by truncating the values in x toward 0
+set.seed(123) # for randomization 
+train_indices <- sample(seq_len(nrow(mtcars)), size = sample_size) #sample takes a sample of specified size, seq_len() generates regular sequences of mtcar rows that are sample size of training 
+
+train <- mtcars[train_indices, ]
+test <- mtcars[-train_indices, ]
+```
+
+Code explanation: 
+- sets the split size at 80% and then the sample size for training set to be 80% of the total number of rows 
+- set a seed for reproducibility then get a list of row indices that we are going to put in our training data 
+- then split the training and test data by setting the training data to be the rows that contain those indices and the test data is everything else 
+- ! we can also use split(), test(), and train()
+
+- build a regression model using only training data then pass it the test values to get the model outputs the key component is that we have the known data against which we can test the model allowing us to get a **a better level of error estimate out**
+
+```{r}
+model2 <- lm(mpg~disp, data = train) # runs model on training data
+new.data <- data.frame(disp = test$disp) # creates new dataframe with the disp feature from test data
+test$output <- predict(model2, new.data) # using the model on the test disp feature 
+sqrt(sum(test$mpg - test$output)^2/nrow(test)) #take the sum of the actual value of mpg and the output of the model predictions using test divided by number of rows to get accuracy 
+```
+If were to look at residual standard error before you would see a different value however this value is deceiving because it was created using the same values as the testing 
+
+Therefore: 
+- We csplit the original mtcars dataset into a training that we use exlusivey for making the model and a test set which we use to test against it 
+-  calculate new model using lm(), next form a df from oour tests disp column 
+- then make predictions on our test set and store that in a new col in our test set 
+- then find the RMSE (root mean square error) by taking the difference between our model output and the known mpg efficinecy, squaring it, summing up those squares, and dividing by the total number of entries in the dataset 
+- the new value is different from what weve seen before and is important for understanding how well the model is performing! 
+
+# Classification: 
+Rather than predicting continuous values, like numbers, in classifcation exercises we'll predict discrete values 
+
+## Logistic regression: sometimes you want to see if a given ata point is of categorical nature instead of numeric 
+
+```{r}
+plot(x = mtcars$mpg, y = mtcars$am, xlab = "Fuel Efficiency (Miles per Gallon)", ylab = "Vehicle Transmission Type (0 = automatic, 1 = manual)")
+```
+In the mtcars dataset each car is given a 0 or a 1 to determine whether it has an automatic transmission as defined by the column name am 
+- A car with an automatic has a value of 1 and manual is assigned 0 
+- Fitting a linear regression model to this data would not work becasue we cant have half a transmission value 
+* We need to rely on logisitic regression model to help classify whether new efficiency data belongs to either the automatic or manual transmission groups 
+
+The new question: How is the fuel efficieny related to a cars transmission type? 
+- We could fit a regression line to the data but the results would be super misleading 
+- Instead use a classification algorithm (logistic regression algorithm)
+
+## Logistic regression: produces discrete outputs instead of continuous ones, expect a binary outcome 
+
+```{r}
+install.packages("caTools")
+library(caTools)
+```
+
+- The above library has a function for logistic regression :LogitBoost
+
+```{r}
+Label.train = train[, 9] #Need to give the model the label against which we want to predict as well as the data you want to use for training
+Data.train = train[, -9] #"the data we want is the mtcars dataset that we split into a training set except column number 9" which is the am column we used before which subsets the data instead of listing out each column individually for input, just focuses on am!
+
+model = LogitBoost(Data.train, Label.train) #set the label and data by picking the columns that represented each 
+Data.test = test
+Lab = predict(model, Data.test, type = "raw")
+data.frame(row.names(test), test$mpg, test$am, Lab)
+```
+Here we have a given engine efficiency in mpg and a known value if the car is an automatic transmission (1) or not (0), then have two columns, x0, and x1, which are probabilities that are output by the model if thec ar is an automatic transission (x0) or a manual transmission (x1). Ways to tune this model to be more accurate could include colelcting more data in the training dataset or tuning the options available in the LogitBoots function itself 
+ex: Mazda it comes out as an automatic and there is a 99% change it is a manual so this is wrong!
+
+# Supervised Clustering Methdos 
