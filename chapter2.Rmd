@@ -5,6 +5,11 @@ date: "2024-08-27"
 output: html_document
 ---
 
+```{r}
+library(ggplot2)
+library(tidyverse)
+```
+
 # In general: 
 ## Supervised learning models
 - A machine learning model is scored and tuned against some sort of known quantity 
@@ -119,7 +124,7 @@ The new question: How is the fuel efficieny related to a cars transmission type?
 ## Logistic regression: produces discrete outputs instead of continuous ones, expect a binary outcome 
 
 ```{r}
-install.packages("caTools")
+#install.packages("caTools")
 library(caTools)
 ```
 
@@ -137,4 +142,116 @@ data.frame(row.names(test), test$mpg, test$am, Lab)
 Here we have a given engine efficiency in mpg and a known value if the car is an automatic transmission (1) or not (0), then have two columns, x0, and x1, which are probabilities that are output by the model if thec ar is an automatic transission (x0) or a manual transmission (x1). Ways to tune this model to be more accurate could include colelcting more data in the training dataset or tuning the options available in the LogitBoots function itself 
 ex: Mazda it comes out as an automatic and there is a 99% change it is a manual so this is wrong!
 
-# Supervised Clustering Methdos 
+# Supervised Clustering Methdods
+When you have a set of data and want to define classes based on how closely theyre grouped 
+- A clustering algorithm can help you find patterns where they might otherwise be difficult to see explicitly 
+- Good example of an ecosystem of algorithms that can be used both in unsupervised and supervised 
+- One of the most popular forms of **Classification** and one of the most popular clustering models is the kmeans algorithm 
+```{r}
+plot(x = iris$Petal.Length, y = iris$Petal.Width, xlab = "Petal Length", ylab = "Petal Width")
+# petal length as a function of petal width 
+```
+- Clumping of data in the lower left corner stands out as one of the obvious data clusters
+- But how can we cluster the data in the above right portion into two groups? 
+  - kmeans()
+  
+## Kmeans() 
+### Works by first placing a number of random test points in our data and in this case two 
+- Each of our real data points is measured as a distance from these test poiints and then the test points are moved in a way to minimze that distance 
+
+```{r}
+data = data.frame(iris$Petal.Length, iris$Petal.Width)
+iris.kmeans <- kmeans(data, 2)
+plot(x = iris$Petal.Length, y = iris$Petal.Width, pch = iris.kmeans$cluster,
+     xlab = "Petal Length", ylab = "Petal Width")
+points(iris.kmeans$centers, pch = 8, cex = 20)
+```
+Above the data is split into two major groups, in the lower left is one cluster denoted by small triangles and in the upper right is another cluster labeled with circular data points and the stars in the middle of each cluster mark where the cluster centers have stopped iterating 
+- Any point that we further add to the daata is marked as being in a cluster if its closer to one vs another 
+- There is one outlier data point in the lower left cluster so lets use one more cluster!
+
+```{r}
+iris.kmeans3 <- kmeans(data, 3)
+
+plot(x = iris$Petal.Length, y = iris$Petal.Width, pch = iris.kmeans3$cluster,
+     xlab = "Petal Length", ylab = "Petal Width")
+points(iris.kmeans3$centers, pch = 8, cex = 2)
+
+```
+Now we have 3 groups to classify the dataset! The larger group of data has been split further into two clusters of data that look about equal in size!
+- You can keep adding clusters but you would be losing important information (if every point was its own cluster it would be meaningless as far as classification goes!)
+**Too few clusters and the data is underfit: there isnt a good way to determine structure**
+**Too many clusters and you ave the opposite problem: there's far too much structure to make sense of simply**
+
+```{r}
+
+plot(x = iris$Petal.Length, iris$Petal.Width, pch = iris.kmeans$cluster, xlab = "Petal Length", ylab = "Petal Width", main = "Model Output")
+
+plot(x = iris$Petal.Length, y = iris$Petal.Width, pch = as.integer(iris$Species), xlab = "Petal Length", ylab = "Petal Width", main = "Actual Data")
+
+par(mfrow = c(1,2))
+```
+
+```{r}
+head(iris)
+unique(iris$Species) #3 species!
+```
+
+The three cluster kmeans algorithm works against the actual species labels in the data, seems to be a fairly good match! 
+
+```{r}
+table(iris.kmeans3$cluster, iris$Species)
+```
+You can read this confusion matrix with the output clusters as the rows, and the actual values from the data as the columns. 
+  - Row 1: Setosa - all 50 setosa samples were classified correctly
+  - Row 2: 48 vesicolor samples were correctly classified, 6 were misclassified as virginica
+  - Row 3: 44 virginica samples were correctly classified, and 2 were misclassified as vesicolor 
+*If the algorithm were 100% perfect we would expect the column to have all of its data in one of the three rows that pertains to the clusters just shows there were 8 off in cluster 2, 8 off in cluster 3 but none in cluster 1!
+
+# Mixed Methods 
+- We've discussed regression which takes in continous numeric data and aoutputs continous nuemric data 
+- Classification which takes in continous numeric data and outputs discrete data or vice versa
+
+## But some methods can use regression to help inform a classification scheme or data can be first taken as labels and used to constrain the regression models 
+
+## Tree based models: 
+### A tree is a structure that has nodes and edges
+- For a decision tree: at each node we might have a value against which we split in order to gain some insights from the data 
+```{r}
+install.packages("party")
+library(party)
+tree <- ctree(mpg ~ ., data = mtcars)
+plot(tree)
+
+```
+ ## Plotted Confidential Inference Tree
+ Plotting engine fuel efficiency (mpg) but using all features in the dataset to build the model instead of just one; hence the mpg ~ . call in the ctree() function, the output is a distirbution (in the form a box and whisker plot) of the fuel efficiency as a function of the major features that influence it 
+
+The **ctree()** function calls on certain methods to figure these out so you dont have a bunch of branches in the tree that dont amount go anything other than to clog the view there **the most important features to mpg are disp (enginge displacement) and wt(cars weight)** read the chart from the top to bottom 
+- At node 1: there is a split for cars that weigh less than 2.32 tons and those that weigh more, for the cars that weight more we split further on enging displacement
+- At node 3, for enginge displacements that have more than 258 cubic inches, we go to node 5
+- For each feature there is a statistical p-value which determines how statistically relevant the feature is 
+- The closer the p-value is to 0.05 or greater, the less useful or relevant it is so in this case the a p-value of almost exactly 0 is very good and likewise you can see how many data points make up each class at the bottom of the trees
+
+Ex: lets consider a car that has a weight of four tons and a small engine size of 100 cubic inches so we would expect the fuel efficiency (at node 4) to be between 13 and 25 miles per gallon 
+
+Now we want to use this structure for prediction?
+The first thing that should pop up is you are looking at the entire data set instesd of just the training data 
+
+```{r}
+tree.train <- ctree(mpg~ ., data = train)
+plot(tree.train)
+```
+By taking the same data and splitting it into a training set, you simplify the picture somewhat. The tree depends only on the cyl variable 
+
+The code below performs both a regression and a classification test in two easy lines of code, first it takes the predict() function and applies it to the entirety of the test data and then stores it as a column in the test data then it performs the same procedure but add type="node" option to the predict() function to get a class out, then sticks them all together in a single df
+```{r}
+test$mpg.tree <- predict(tree.train, test) #predict() function and applies it to the entirety of the test data
+test$class <- predict(tree.train, test, type = "node") #applies it to the entirety of the test data and then stores it as a column in the test data then it performs the same procedure but add type="node" option to get a class out!
+data.frame(row.names(test), test$mpg, test$mpg.tree, test$class) # sticks them together in a df
+
+```
+
+We provided both a continuous, numeric output (regression) as well as a discrete class output (classification) for the same input
+
+# Random Forests
