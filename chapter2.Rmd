@@ -93,7 +93,7 @@ Code explanation:
 model2 <- lm(mpg~disp, data = train) # runs model on training data
 new.data <- data.frame(disp = test$disp) # creates new dataframe with the disp feature from test data
 test$output <- predict(model2, new.data) # using the model on the test disp feature 
-sqrt(sum(test$mpg - test$output)^2/nrow(test)) #take the sum of the actual value of mpg and the output of the model predictions using test divided by number of rows to get accuracy 
+sqrt(sum(test$mpg - test$output)^2/nrow(test))
 ```
 If were to look at residual standard error before you would see a different value however this value is deceiving because it was created using the same values as the testing 
 

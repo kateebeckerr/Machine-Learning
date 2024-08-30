@@ -1,0 +1,100 @@
+---
+title: "National Fish Yields"
+author: "Kate Becker"
+date: "2024-08-30"
+output: html_document
+---
+
+# Libraries
+```{r}
+library(tidyverse)
+library(janitor)
+library(ggplot2)
+```
+
+# Data read in and cleaning 
+```{r}
+NOAAaqua <- read_csv("/Users/katebecker/Documents/playing/Machine-Learning/data/California Aquaculture.csv")
+view(NOAAaqua)
+colnames(NOAAaqua)
+
+NOAAaqua <- NOAAaqua[, -1]
+```
+
+```{r}
+head(NOAAaqua)
+#11 features 
+
+plot(x = NOAAaqua$Dollars, y = NOAAaqua$Kilos, xlab = "Yields in Kilos", ylab = "Profit")
+# Fuel efficiency decreases as the size of the engine increases but if you have some new engine for which you want know the efficiency it doesnt give you an exact answer 
+
+```
+
+```{r}
+model <- lm(NOAAaqua$Kilos ~ NOAAaqua$Dollars)
+coef(model)
+```
+
+With every one degree increase in aquaculture yields there's a 0.1179 increase in profit
+
+```{r}
+summary(model)
+```
+There is 74% correlation between aquaculture profit and yield! 
+*Note its the same as multiple R-squared
+
+```{r}
+split_size = 0.8
+sample_size = floor(split_size * nrow(NOAAaqua)) # floor() takes a simple numeric argument x and returns a numeric vector containing the integers formed by truncating the values in x toward 0
+set.seed(123) # for randomization 
+train_indices <- sample(seq_len(nrow(NOAAaqua)), size = sample_size) #sample takes a sample of specified size, seq_len() generates regular sequences of mtcar rows that are sample size of training 
+
+train <- NOAAaqua[train_indices, ]
+test <- NOAAaqua[-train_indices, ]
+```
+
+Testing model with training data
+```{r}
+model2 <- lm(Kilos~Dollars, data = train) # runs model on training data
+new.data <- data.frame(Dollars = test$Dollars) # creates new dataframe with the disp feature from test data
+test$output <- predict(model2, new.data) # using the model on the test disp feature 
+sqrt(sum(test$Kilos - test$output)^2/nrow(test))
+```
+
+Clustering: 2 clusters
+```{r}
+data = data.frame(NOAAaqua$Kilos, NOAAaqua$Dollars)
+NOAA.kmeans <- kmeans(data, 2)
+plot(x = NOAAaqua$Kilos, y = NOAAaqua$Dollars, pch = iris.kmeans$cluster,
+     xlab = "Kilos", ylab = "Dollars")
+points(NOAA.kmeans$centers, pch = 8, cex = 20)
+
+```
+```{r}
+NOAA.kmeans3 <- kmeans(data, 3)
+plot(x = NOAAaqua$Kilos, NOAAaqua$Dollars, pch = NOAA.kmeans3$cluster, xlab = "Kilos",  ylab = "Dollars")
+points(NOAA.kmeans3$centers, pch = 8, cex = 20)
+```
+```{r}
+total_NAs <- sum(is.na(NOAAaqua))
+print(total_NAs)
+
+pch_values <- as.integer(factor(NOAAaqua$Country))
+```
+
+
+```{r}
+plot(x = NOAAaqua$Kilos, NOAAaqua$Dollars, pch = NOAA.kmeans$cluster, xlab = "Kilos", ylab = "Dollars", main = "Model Output")
+
+
+plot(x = NOAAaqua$Kilos, y = NOAAaqua$Dollars, pch = as.integer(NOAAaqua$Country), xlab = "Kilos", ylab = "Dollars", main = "Actual Data")
+
+par(mfrow = c(1,2))
+
+
+```
+
+```{r}
+
+```
+
