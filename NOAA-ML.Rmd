@@ -94,6 +94,35 @@ par(mfrow = c(1,2))
 
 ```
 
+
+
+# Cluster algoritms
+```{r}
+unique(NOAAaqua$Country) #122 countries !
+```
+
+
+```{r}
+table(NOAA.kmeans3$cluster, NOAAaqua$Country)
+```
+```{r}
+type(NOAAaqua$)
+```
+
+```{r}
+install.packages("palmerpenguins")
+library(palmerpenguins)
+view(penguins)
+```
+
+
+```{r}
+#install.packages("party")
+library(party)
+tree <- ctree(island ~ ., data = penguins)
+plot(tree)
+```
+
 ```{r}
 
 ```

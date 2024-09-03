@@ -254,4 +254,129 @@ data.frame(row.names(test), test$mpg, test$mpg.tree, test$class) # sticks them t
 
 We provided both a continuous, numeric output (regression) as well as a discrete class output (classification) for the same input
 
+
 # Random Forests
+ex: when considering a decision tree, a friends asking you a series of questions to fine tune what kind of movei you want to watch like is it two hours, does it have this actor etc.., and they recommend a movie based on these inputs but that's one friends input you want to ask a bunch of your friends and you go through the questions again and then they vote if you're interested in the movie 
+- by asking a few frieds instead of one you build an ensemble classifier or a forest 
+ex: you tell amanda you saw the dark knight eight times in theaters but maybe there was a reason why (saw with friends scheduling, etc.) that view count could be inflated so maybe the friends you ask should exlude that example 
+- you tell amanda you cried during the movie armegeddon but only once while cutting an onion so you should weigh the movie less, instead of working with the same data set you vary it slightly 
+- you aren't changing the end results of liking the movie or not but are tinkering with the decision that led to the result this is creating a **bootstrapped** version of your beginning data 
+
+ex: Robert suggests the rock because he thinks you like jerry buckheimer movies more than you really do, max suggests Kagemusha, adn will thinks you wont like any of his results and thus recommendds nothing 
+- these results are the **aggregated bootstrap forest** of movie preferences, your friends have no become a **Random forest**
+
+*Random forests arent as easily describale in a model form as a simple y = mx+b or a simple tree that has a few nodes but you can do usual training and testing of continous and discrete data like we have seen with ctree()
+
+```{r}
+install.packages("randomForest")
+library(randomForest)
+mtcars.rf <- randomForest(mpg~ ., data = mtcars, ntree= 1000, keep.forest = FALSE, importance = FALSE)
+plot(mtcars.rf, log = "y", title = "")
+
+# Can show how the error in the model evolves over the course of how many trees were introduced into the model 
+```
+
+This graph shows the constraiing of error in a random forest algorithm with 1000 trees used this is as if **you had 1000 friends playing the movie guessing game for recommendations, you can see the error goes down with the more trees that you use and is minimal at around the n = 500 trees area) 
+
+# Neural Networks 
+### Takes in computational form the way neuros in a biological system work : For a given list of inputs, a neural network performs a number of processing steps before returning an output 
+- The complexity in neural networks comes in how many of the processing steps there are and how complex each particular step may be 
+- Exampleof how a neural network can work is through the use of logic gates 
+- We use logical functions (ex: **an AND function is only true if both inputs are true, if one or both inputs are false the result is false**)
+
+```{r}
+TRUE & TRUE
+TRUE & FALSE
+FALSE & FALSE
+```
+
+### We can define a simple neural netwoek as one that takes in two inputs, calculates the AND function and gives a result which can be described in graphical form where you have layers and nodes 
+**Layers** are vertical sections of the visual, and nodes are the points of computations within each layer 
+- The mathematics of this require the use of **bias variable** which is a constant we add the equation for calculation purposes annd it represented as each node typically at the top of each layer in the neural network 
+- In the case of the AND function we use numeric values passed into a classification function to give a value of 1 for TRUE and 0 for false and can do this using the sigmoid function : 
+
+f(x) = 1 / (1 + e^-x)
+
+- So for negative values of x that are less than -5 the function is basically 0 (denoinator gets closer to 0)
+- For positive values of x that are greater than 5 the function is basically 1  (denominator gets closer to 1)
+- If we had a predefined set of weights for each node in the neural network we could have three circiles in line vertically with (1,x1, x2) with arrows (-20, 15, 17) respectively pointing to one cricle and a line to f(x)
+  - **we start with inputs X1, X2 and this bias node which is just an additive constant) (we calculate all these things at the empty circle which signifies a computation node, thec omputation taht we perform is putting all these things into an activation function which is almost always a sigmopid function, the output of the sigmoid function is the result of the neural networl**
+  
+Lets walk through this: 
+- To calculate the end result of an AND gate (the f(x) on the ride side) we need to take in inputs for x1 and x2
+- defining true to be 1 and false to be 0
+- the last input we have is the bias variable which is 1 in the simple case 
+- when the the network is trained we will find weights that are tied to each input 
+- we then build an equation using those weights and find out what the equations result is 
+- we then pass the result through a sigmoid function (the empty circle) and get the answer of the other side 
+
+The weights we have are : -20, 15*x1, 17*x2 
+- if x1 is TRUE it is a 1 otherwise it is a 0
+- we then solve the equation and pass the final value through the sigmoid function and repeat this for all combinations of our input variables 
+
+x1 = 1
+x2 = 1
+h(x) = f(-20 + 15 + 17)
+h(x) = f(12) = 1
+
+x1 = 1
+x2 = 0
+h(x) = f(-20 +15)
+hx(x) = f(-5) = 0 
+
+x1 = 0 
+x2 =1
+h(x) = f(-20 + 17)
+h(x) = f(-3) = 0
+
+x1 = 0
+x2 = 0 
+h(x) = f(-20) = 0 
+
+- We started with a single layer of variables that have some predefined weight to them
+- *The input layer* : a layer that takes in a number of features including a bias node which is often just a set of offset parameter 
+- *The hidden layer or compute layer*: a layer that computes some function of each feature and the number of nodes in the hidden layer depends on the computations, sometimes may be as simple as one node in this layer or as complex as multiple hidden layers 
+- *The output layer* a final processing node which might be a single function 
+
+```{r}
+set.seed(123)
+library(nnet)
+iris.nn <- nnet(Species ~., data = iris, size = 2)
+# size = 2 option tells use that we using two hidden layers for computation which must specified 
+# the output that we see are iterations of the network
+```
+We can use this for predictions: 
+```{r}
+table(iris$Species, predict(iris.nn, iris, type = "class"))
+```
+
+The result in the confusion matrix are the reference iris species of flowers across the top and the predicted iris species of flowers going up and down the table 
+- We see that the neural network performed perfectly for classifying the setosa species but missed one classification for the versicolor and virgina species 
+**A perfect machine learning model would have zeros for all the off diagonal elements**
+
+# Support Vector Machines 
+
+SVMs: you can use for both regression and classification can be simpler fo aster to a neural network 
+- Similar to logistic regression 
+- taking data and trying to find a plane or a line that can separate the data into different classes 
+
+Suppose you have n features in your data and m observations or rows if n is much greater than m (n = 1000, m = 10) you would want to use a logisitic regressor and if you have the opposite you might want to use SVM instead 
+- You can use a neural network but its considered slower 
+
+```{r}
+library(e1071)
+iris.svm <- svm(Species ~., data = iris)
+table(iris$Species, predict(iris.svm, iris, type = "class"))
+```
+The resutls look very similar to a neaural network but for the predicted species of flowers differed bu one compared to our nnet() classifier  
+
+Drawbacks:
+- Neural networks can be computationally expensive at scale or slow depending on complexitiy of the calculation 
+- SVMs can be quicker but neural networks can represent more intelligent functions compared to the simplier SVM architecture 
+- Neural networks handle multiple networks whereas SVMS can handle one at a time
+
+# Unsupervised Learning
+```{r}
+
+```
+
