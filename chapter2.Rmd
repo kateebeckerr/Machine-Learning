@@ -376,7 +376,68 @@ Drawbacks:
 - Neural networks handle multiple networks whereas SVMS can handle one at a time
 
 # Unsupervised Learning
-```{r}
 
+So far.... with supervised learning we've taken a set of data, broken it into test and training data, trained the model and then evaluated its performance with the test data. 
+
+### Unsupervised take a different approach..we are tying to define the overall structure of the data and in principal wont have a test set against which to evalutate the models performance 
+
+- Most machine learning models will be supervised..you build a model, train and test the data, and comparae the outputs to some known parameters. 
+- Unsupervised doesnt have an answer value agaisnt which to score the model 
+
+ex: 
+## Text mining: 
+Unsupervised learner modeled on test from all of Lincolns writting might be used to try and build an artifical intelligence (AI) that would write documetns like he would based on word frequency and proximity to other words. Theres no immediate (right) answer to which you would evaluate your Lincoln bot. **Instead you would score that case by what kind of contextual sense the model would generate**
+
+**Most common: Clustering**
+
+# Unsupervised Clustering Method 
+Take data that has no categorical level and try to categorize them yourself
+- If you dont generate some random data, you dont really know how it will cluster up
+
+ex: performing the kmeans clustering algorithm to see how the data should be classified
+```{r}
+# Generated a random set of data that is normally distributed into two groups, this can yield a result making it difficult to distiniguish between groups 
+
+# bind two matrices of random data with a specified distribution 
+x <- rbind(matrix(rnorm(100, sd = 0.3), ncol = 2), matrix(rnorm(100, mean = 1, sd = 0.3), ncol = 2))
+view(x)
+
+colnames(x) <- c("x", "y")
+
+plot(x)
+
+# Random data we want to classify intp two distinct clusters can be difficult to figure this out but kmeans helps 
+# plots random datapoints 
 ```
+# K means: Data given by x are clustered by k means method, aims to partition the points into k groups such that the sumer of squares from points to the assigned cluster centres is minimzed 
+
+```{r}
+cl <- kmeans(x, 2) #creates two clusters
+
+#sets point symbols to specific clusters
+plot(x, pch = cl$cluster)
+
+# Randomly distributed data points with clustering classification labels applied
+```
+
+### Dataset has no explicit label tagged to it prior to applying the kmeans classification the best you can do is label future data points according to cluster centers and you can print this: 
+```{r}
+cl[2]
+#CLiuster centers below
+```
+# Chapter Summary 
+
+- A machine learning algorithm is **supervised** where there is a test set against which you can evaluate the algorithms performance and you can do this by taking what data you do have, splitting it into a training set that comprises 80% of total data and then save the rest for the test set 
+- You train the ML algorithm on the training set and pass the test set through the trained model you can then evaluate the models performance on the test set with the known values 
+- When you get new data to evaluate, you can know the limits of the ML models accuracy 
+- Also took a look at differences between **Regression (continuous data in, continuous data out) and classification (discrete data in, discrete data out) and many ML algorithms that you can use for both 
+
+For supervised algorithm we covered the most popular and how to implement them at a basic level: 
+- **Linear regression, lm()**, for defining a sample equation by which you can describe a relationship between an output and a number of features attributed to it 
+- **Logistic regression, LogitBoost()**, for determining a way to separate numeric data into classes 
+- **K means clustering, kmeans()**, for developing clusters and labeling data according to how those clusters evolve 
+- **Conditional inference trees, ctree()**, for defining splits in data and performing regression or classification on the split data (actual trees!)
+- **Random forest, randomForest()**, for a more in depth and accurate, yet less intuitive solution than conditional inferences trees
+- **Support vector machines, svm()**, for when you might have fewer features than observations and arent getting good results from logistic regression 
+
 
