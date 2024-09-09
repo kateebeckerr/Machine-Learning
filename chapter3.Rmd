@@ -1,0 +1,90 @@
+---
+title: "Sampling Statistics and Model Training in R"
+author: "Kate Becker"
+date: "2024-09-09"
+output: html_document
+---
+
+## General Terms 
+Population:  entire collection (or universe) of things under consideration 
+Sample: a portion of the population we select for the analysis 
+
+ex: polling data is an example of sampling and is gathered by asking questions of people for specific deomographics 
+- the polling data can only be a subset of the general population of a country becauase it would be imposible to poll every single person, if we have a country of 300 million people and only 10 million answered the poll this is sampling 
+- to fully understand what everyone in the country prefers we might have to do some extrapolation from the sample to the population 
+- in the world of statistics we have values assocaited with the total population adn those associated with smaller populations 
+
+Values related to the terms: mean, variance, and standard deviation in terms of the whole population these are called *parameters* but when talk about these but for a certain subset of the data they're *statistics*
+- So we might be looking at a specific subset of a country and look at the mean statistics in that case comparing is to the mean parameter 
+- the number of people in a counry who like blue would be a parameter but number of people in a particular city would be a statistic 
+
+Bias
+- sampling biase iswhat happens when you sample data in such a way that distirbutions in the samples of the data dont match up from the populations in which youre drawing from 
+- sample variation is the extent to which a sample statistic (maybe favorite food as opposed to color) differs from the population 
+- both of these can be controlled by picking the right way of sampling our data 
+
+
+## Low bias, low variance: The best case scenario, samples are pretty well representative of the population (points are clustered and on target)
+
+## High bias, low variance: the samples are consistent but not reflective of the entire population (points are clustered together but not on target)
+
+## Low bias, high variance : the sample veary wildy in their consistency but some might be representative of the population (points arent clustered and are very scattered)
+
+## High bias, high variance: the samples are a little more consistent but not likely to be representative of the entire population (points arent as clustered and arent on target)
+
+*low bias (samples are pretty representative) low variance: samples are consistent 
+
+#1. 
+A *simple random sample* is one way of controlling bias when pulling samples from a population statement
+- this is when you select values from your data at random such that every row has an equal chance of being selected 
+- applying a simple random sample to the same data twice will have possibility of selecting the same data, if its truly random 
+
+#2
+A *stratified random sample* or oversampling is when you separate the data into mutually exlusive groups, called strata, and then do a simple random sample on each stratum and this would belike polling randomly across each state 
+- the two advantages: 
+  - ensurs representation in each strata 
+  - can be more accurate than a simple random sample if there is mroe variation in one strata than others 
+
+When you randomly select from various strata in your data (a strata could be a grouping or cut in the data that separates one part of it from another which could be due to classification or factor variables in the data)  
+  
+#3
+The samples are spread geographically or spatially and you could perform a *cluster* sample, for examples when you have data that is stratified by country or city and this is similar to performing a stratified random sample but **picking the entire strata randomly** instead of doing a simpler random **sample within the strata**
+
+When you take all data points from a given class or cut in the data, where the classes or cuts themselves are randomly selected
+
+#4
+A *systematic sample* is when you randomly select from your first n data points, and then select every nth data point thereafter,, this isnt random (other than the initial randomization to find the seed on which to iterate) but easy to perform on databases 
+
+
+**In almost all cases you will use a simple random sample for speed and ease in implementation however certain cases may require you to stratify the data first before sampling or if data is arranged in such a way like being distributed over geographic regions you may prefer clustering 
+**Note: taking 100% of your population for data isnt the best approach but need to strike a balane so that your sample has enough data points to be statistically significant and well represenative of the population statistics you're looking at 
+
+# Sampling in R :
+## Simple
+```{r}
+iris.df <- data.frame(iris)
+sample.index <- sample(1:nrow(iris.df), nrow(iris) * 0.75, replace = FALSE)
+head(iris[sample.index,])
+
+# This code does a simple random saple of the iris dataset by first generating indices by which you need to subset your dataset and in this case we randomly select 5 rows without replacement 
+# If selected replace = TRUE, when you randomly draw out a row from the data, you have the change of drawing the same row again 
+```
+## Stratified 
+```{r}
+summary(iris)
+# Petal length has the highest value of variance follwed by sepal.length 
+```
+This sample takes 75% sample of the original data, and you can see that the distributions are all pretty close to what the population values are 
+```{r}
+# We intend to get a sample that has roughly the same distribution of values for any of these features but some of these columns vary to a high degree than others 
+
+summary(iris[sample.index,])
+
+```
+```{r}
+install.packages("splitstackshape")
+library(splitstackshape)
+
+summary(strata(iris, "Sepal.Length", 0.7 ))
+```
+
