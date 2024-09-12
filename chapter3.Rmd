@@ -214,4 +214,70 @@ train.output <- predict(train.linear, test.data) # predict the linear model on t
 ```
  Here your model is comparing what the model thinks the answer should be given input x compared to the actual values in your test set given by y..for regression...depending on the data and waht kind of error analysis that you want to do specifically...use **root-mean-square error (RMSE)**
  
+# RMSE
+You take the output values that the model has provided for the training data input, subtract those by the y values that you have in the test data, square the values, divide those by the total number of observations and sum up all values, and take the square root
  
+```{r}
+RMSE.df = data.frame(predicted = train.output, actual = test.data$y,
+                     SE = ((train.output - test.data$y)^2/length(train.output)))
+
+head(RMSE.df)
+```
+
+ 
+```{r}
+sqrt(sum(RMSE.df$SE))
+```
+ 
+The value of 6.9 for RMSE is this models error score. To see how good this number is compare it another RMSE. You can run the same logic on a function fit of one higher degree and see what kind of RMSE you get as an end result.
+
+```{r}
+train.quadratc <- lm(y ~ x^2 + x, training.data) #one higher degree 
+quadratic.output <- predict(train.quadratc, test.data)
+RMSE.quad.df = data.frame(predicted = quadratic.output, actual = test.data$y,
+                          SE = ((quadratic.output - test.data$y)^2)/length(train.output))
+
+head(RMSE.quad.df)
+
+```
+ 
+
+```{r}
+sqrt(sum(RMSE.quad.df$SE))
+```
+ 
+The output shows that bumping up the polynomial degree fit by one to a quadratic helps to decrease the error in what the model is predicting (from the quadratic,output variable) compared to what the actual values are. This follows from the fact that the actual data you're plotting appears to fit very well by a quadratic anyway. 
+ 
+The next step is to increase the polynomial degree even further and assess how it affects the RMSE:
+
+```{r}
+train.polyn <- lm(y~poly(x,4), training.data)
+polyn.output <- predict(train.polyn, test.data)
+RMSE.polyn.df = data.frame(predicted = polyn.output, actual = test.data$y,
+                           SE = ((polyn.output - test.data$y)^2/length(train.output)))
+head(sum(RMSE.polyn.df$SE))
+```
+
+
+The RMSE has gone up compared ot the quadratic fit case. This follows the same pattern of a higher degree polynomial overfitting the data. But a smaller RMSE shows that the model fits the data nicely and morea ccurate predictions.
+
+A simple linear fit to data would mostly be under fit; this is when the fitted line as given by the coefficients output from the model dont quite line up with the data you have. Meaning that the line on the chart the represents the machinel earning model (simple linear regression) doesnt explain most of the data, its too simple a model. Difficult for linear regressionto overfit the model so we rarely use training and testing data to evaluate them. With a quadratic fit the model tends to conform to the shape of most of the data points and now the model is a bit more complex. If you were to add anoter couple of data points in the same shape it would look like fits well. 
+  - By training a  ML model with a specific training sample and looking at the difference between that and the saved test data you can evaluate how well the ML fit the data 
+  - The downside of this future explanatory power if we add a few more dat apoints the model shown wont fit them well at all and will have an increased error 
+  
+  
+In a complex model fit scenario, where the model is too specific to the training data, new test data will most likely have a lot of errors when we evaluated the model output versus our test data 
+
+- When you do a train/test validation on continuous data as in regression, you can choose from a series of statistical measures like RMSE but you want to compare the output values that the mdoel gives you 
+- But you want to compare the output values that the model gives you based on a subset of data that you used to train the model to that of the data you held out for testing purposes 
+- Should have a list of numbers for the model estimates and a list of numbers that are the actual values 
+- Thank you can bubble up to some aggregate number and compare against other methods 
+
+## Root mean square error(RMSE), Mean absolute error(MAE), Root relative square error(RRSE), Relative Absolute Error (RAE)
+- For **RMSE and MAE**, we look at the average difference between the model output ypredicted and the values we have in our test set yactual. 
+- These are compared to the same scale of our feature
+- You can think of it like 1 point of error is a difference of 1 between predicted and yactual 
+- We tend to multiply it by 100 to get something in the 1 to 100 range and convert it to a percentage as well 
+- The denominators of the two equations tells us how much the feature deviates from its average value which is why they call them relative 
+# Training and Test Sets: Classification Modeling 
+
