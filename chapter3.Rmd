@@ -5,6 +5,11 @@ date: "2024-09-09"
 output: html_document
 ---
 
+```{r}
+library(tidyverse)
+```
+
+
 ## General Terms 
 Population:  entire collection (or universe) of things under consideration 
 Sample: a portion of the population we select for the analysis 
@@ -280,4 +285,52 @@ In a complex model fit scenario, where the model is too specific to the training
 - We tend to multiply it by 100 to get something in the 1 to 100 range and convert it to a percentage as well 
 - The denominators of the two equations tells us how much the feature deviates from its average value which is why they call them relative 
 # Training and Test Sets: Classification Modeling 
+You evaluate a classifications models performance by starting with a confusion matrix. In a simple form, it can take representation as a 2 x 2 matrix in whcih the model output predicted classes are compared to the actual classes and the count of the model output in the cells of the matrix 
+**This informs us how many true positives, true negatives, false positives, and false negatives there are**
+
+```{r}
+iris.df <- iris
+iris.df$Species <- as.character(iris.df$Species) # convert species feature to a character
+iris.df$Species[iris.df$Species != "setosa"] <- "other" # anything in species feature not setosa name as other
+iris.df$Species <- as.factor(iris.df$Species)
+iris.samples <- sample(1:nrow(iris.df), nrow(iris.df) * 0.7, # take a sample thats 70%
+                       replace = TRUE)
+training.iris <- iris.df[iris.samples,]
+testing.iris <- iris.df[-iris.samples, ]
+```
+
+
+```{r}
+library(randomForest)
+iris.rf <- randomForest(Species ~ ., data = training.iris)
+iris.predictions <- predict(iris.rf, testing.iris)
+table(iris.predictions, testing.iris$Species)
+# In a binary class truth table there are two outcomes: either predicted values is some class or it is not, in this case you're focusing on whether the model predicted setosa class or something else, there are four values for the confusion table
+
+# Below our model is extremely accurate 
+```
+## True Positive
+The model predicted setosa class and got them right 
+## True Negative
+The model predicted other classes and got them right 
+## False Positive
+The model predicted setosa and got it wrong
+## False Negative
+The model predicted other classes and got it wrong 
+
+- 54 is true postive
+- 0 is false negative (bottom left)
+- 0 is false positive (top right)
+- 27 is true negative 
+
+Predicted is at top of matrix and actual is vertical left of matrix 
+
+Say that other that (moving left to right top to bottom it was 28, 3, 2, 12) This forcees two false positives and two false negatives, we have 15 true positives (TP), 26 true negatives (TN), 2 false positives (FP), and 2 false negatives (FN)
+
+- 28 is true positive 
+- 2 is false negative 
+- 3 is false positive
+- 12 is true negative 
+
+*now 15 true positives (3 + 12), 26 true negatives (28-2), 2 false positives, and 3 false negatives  
 
