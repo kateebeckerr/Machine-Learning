@@ -316,12 +316,12 @@ The model predicted other classes and got them right
 ## False Positive
 The model predicted setosa and got it wrong
 ## False Negative
-The model predicted other classes and got it wrong 
+The model predicted other cl asses and got it wrong 
 
-- 54 is true postive
+- 54 is true postive (top right) 
 - 0 is false negative (bottom left)
 - 0 is false positive (top right)
-- 27 is true negative 
+- 27 is true negative (bottom right)
 
 Predicted is at top of matrix and actual is vertical left of matrix 
 
@@ -333,4 +333,72 @@ Say that other that (moving left to right top to bottom it was 28, 3, 2, 12) Thi
 - 12 is true negative 
 
 *now 15 true positives (3 + 12), 26 true negatives (28-2), 2 false positives, and 3 false negatives  
+We have a number of statistics from which we can choose to test our accuracy:
+Sensitivity: similar to hit rate or recall
+Sensitivity: TP /(TP + FN) = 0.83
+Specificity: TN / (TN + FP) = 0.92
+Precision: positive prediction value 
+Precision : TP / TP + FP = 0.99
+Accuracy : TP + TN/ TP + TN + FP + FN = 0.89
+F1 score : 2TP / 2TP + FP + FN = 0.86
+
+Sensitivity: This is if you have a lower threshold set for your classification model, you would set a lower bar if you didnt want to miss out on any plants that could possibility be of a setosa type
+
+Specificity: Logically the same thing as precision, but for the opposite case when you're predicting whether a plant isnt setosa variant
+
+Precision: The number of positive cases you've predicted divided by the total predicted positive. If you had a model that had a very high sensitivity, that would be akin to setting a threshold in your model to say "only classify a plant as setosa if we are absolutely sure about it" (if given positive probabilty that it actually is)
+
+Accuracy: the number of true cases divided by the total true and false cases 
+
+F1 score: weighted average of precision and recall scores 
+
+*When you have an almost identail number of false positives and false negatives using accuracy is the perfect measure to use 
+*However if false positive or false negatives are skewed in favor of one or the other you need a more robust statistical test to account for such behavior
+* f1 and accuracy are about the same number when the false positive and false negative rates are low  you can use usefulness of the F1 score if you look at a few different mock models that have various precision and recall values, might just take the average of the precision 
+
+
+# Cross Validation 
+So far we've tabled about how just running a model on 100% of your data could yield a result that dofesnt generalize well to new incoming data but the procecss of splitting the data is still somewhat limited 
+  - when youre testing the model output against the reserved data  you are seeing only what the error is for that exat grouping of the test data 
+  - the test data should be representative of the entire dataset 
+  - *you want to train the model in such a way that you can be sure the error is representatiec of the entire dataset not just the specific slice you get from the randomly selected bits you put in the test data* 
+
+## Cross validation : a statistical technique by which you take your entire dataset split it into a number of small train/test chunks, evaluate the error for each chunk, and then average those final errors. 
+- The simple 70/30 train/test spliut is called a simple holdout cross validation technique 
+
+## k fold cross validation 
+- taking your dataset and splitting it into k chunks, for each chunk you then split the data into a smaller train/test set and evaluate the individual chunks error, after you have all the errors for all the chunks you simply take the average
+
+You can use the *cut function* to evenly split up data for a given dataset's indices for subsetting and then loop over the applied folds of your data, doing train/test for each split
+```{r}
+set.seed(123)  # random number generator 
+x <- rnorm(100, 2, 1)# generates 100 random numbers from a normal distributions with a mean of 2 and a sd of these numbers are stored in the variable x
+y = exp(x) + rnorm(5, 0, 2) # generates the y by taking the exponential of x by adding 5 random numbers  from a normal distribution with a mean of 2 and a sd of 1
+data <- data.frame(x, y) #combines vectors x and u into a df called data each row of df corresponds to a pair of values from x and y
+
+data.shuffled <- data[sample(nrow(data)), ] # shuffles the rows of the df randomly storing results in new df and sample(nrow() function generates a random permutation of row indices ))
+folds <- cut(seq(1, nrow(data)), breaks = 10, labels = FALSE) # divdes data into 10 folds for cross valdation and creates aa sequence from 1 to the. number of rows in data and cut assins each row to one of the 10 folds returning an integer label for each fold 
+
+errors <- c(0) #initialize error values with a single element 0 which will later store the caluclated errors from each fold during cross val 
+
+for(i in 1:10){ # starts a loop that iterates over each of teh 10 folds 
+  fold.indexes <- which(folds == i, arr.ind = TRUE) # fold indices of the rows that belong to the current fold, fold i, and stores them in fold.indices 
+  test.data <- data[fold.indexes, ] #extracts rows that correspond to current fold incides and stores in test
+  training.data <- data[-fold.indexes, ] # creates training by exluding testing
+  
+  train.linear <- lm(y ~ x, training.data) # fits a linear model to training predicting y based on x 
+  train.output <- predict(train.linear, test.data) # uses trained linear model to predict the y values for test data storing data 
+  errors <- -c(errors, sqrt(sum(((train.output - test.data$y)^2/
+                                 length(train.output)))))} # calculates RMSE of predicitons and appends it to the error vectors the involes subtracting predicted from actual in test.data$y, squarin gthe differnes, dividing by total number of predictions (lengh of train.output), taking square root of sum of squared differences
+
+errors[2:11] # extracts RMSE values ignoring initial 0 from errors vector for the 10 folds 
+
+mean(errors[2:11]) # calculates and returns the mean RMSE across all folds providing an overall estimate of the model performance 
+
+```
+
+
+This example shows that the errore stimate can vary to a wide degree within data depending on how you split data,  you can see the RMSE for 10 different cuts of the data, some , some errors go as low as 3.97  others as high as 10.5 so by using cross val not only can you see there is a high degree of variaibility in RMSE but you can mitigate that by taking the average of those values to get a number that mores representative of the error across tehe data as a whole 
+
+# Summary 
 
