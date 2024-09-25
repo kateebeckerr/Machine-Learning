@@ -1,0 +1,62 @@
+---
+title: "Regression"
+author: "Kate Becker"
+date: "2024-09-25"
+output: html_document
+---
+
+```{r}
+library(tidyverse)
+```
+
+# Linear Regression: 
+```{r}
+model <- lm(mtcars$mpg ~ mtcars$disp)
+
+plot( y = mtcars$mpg, x = mtcars$disp, xlab = "Engine Size(cubic inches)", ylab = "Fuel Efficiency (Miles per gallon)", main = "Fuel Effficiency From 'mtcars' dataset")
+      
+
+abline(a = coef(model[1], b = coef(model[2], lty = 2)))
+```
+
+```{r}
+summary(model)
+```
+Multiple R-square is what most people look at 
+
+##  Call
+Displays the formulaic function call we used, we used both response variable, mpg, as a function of one dependent variable, disp, both of which were being called from mtcars dataframe 
+
+## Residuals
+A measure of vertical distance from each data point to to the fitted line in our model and in this case we have summary statistics for all vertical distances for all points relative to the fitted line, the smaller the value the better the fit 
+
+## Coefficients
+y = 0.04x + 29.59
+
+### Std. error 
+With coefficients come error estimates as given by std error which would be: 
+y = (-0.04 +- 0.005)x + (29.59 +- 1.23)
+
+### t value
+Measurement of differences relative to variation in our data, value is linked with p values but p values are used far more frequently 
+
+### p value
+Statistical assessment of significance, less than 0.05 means number is statistically significant, if greater than 0.05 err on side of it not being statistically significant 
+
+## Residual Standard Error
+The error estimate pertains to standard deviation of data
+
+## Multiple R squared 
+R squared for when we have multiple predictors, not totally relevant for linear example but when we add more predictors to the model, invariably our multiple R squared will go up, some features we add to model will explain some part of variance whether true or not 
+
+## Adjusted R - Squared 
+To counteract biases introduced fro having a constantly increasing R square with more predictors, adjsuted R square tends to be better representation ofa model accuracy when there's multiple features 
+
+## F- statistic
+F statistic is ratio of variance explained by parameters in model and unexplained variance 
+
+
+# Multivariate Regression 
+x
+
+

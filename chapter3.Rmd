@@ -401,4 +401,15 @@ mean(errors[2:11]) # calculates and returns the mean RMSE across all folds provi
 This example shows that the errore stimate can vary to a wide degree within data depending on how you split data,  you can see the RMSE for 10 different cuts of the data, some , some errors go as low as 3.97  others as high as 10.5 so by using cross val not only can you see there is a high degree of variaibility in RMSE but you can mitigate that by taking the average of those values to get a number that mores representative of the error across tehe data as a whole 
 
 # Summary 
+Evaluation of machine learning based models come in two forms: 
+- those for regression based predictions and classification based predictions 
+
+For **regression outputs** you get vectors of numbers against which you compare your test data and in order to do so you can perform a series of statistical tests: 
+- **RMSE**: you can take the model output values, subtract the test values, square the differences, take the mean and calculate the square root of the final result. 
+- **Cross validation**: you effectively split data into small training and test sets, evaluate them independently and aggregate their errors which makes you more confident in the models error outputs, good for testing statistical validity 
+
+
+
+
+
 
