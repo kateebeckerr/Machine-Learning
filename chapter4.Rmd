@@ -57,6 +57,62 @@ F statistic is ratio of variance explained by parameters in model and unexplaine
 
 
 # Multivariate Regression 
-x
+More than one feature may be responsible for driving the behavior of a model: y = b + m1x1 + m2x2 + m3x3 + ...
+- x1, x2, x3 are different features in the model such as vehicle weight. engine size, numebr of cylinders
+- y = f(x1,x2,x3,..)
 
+```{r}
+lm.wt <- lm(mpg ~ disp+wt, data = mtcars)
+summary(lm.wt)
+```
+The R square has gone up slightly from 0.709 to 0.7658 after including the engine weight in the fit 
+- However hte statistical relevance of the previous has gone down significantly 
+  - Before the p value of the wt feature was far below the 0.05 threshold for a p value to be significant and now it is 0.06 which may be due to the vehicle fuel efficiency being more sensitive to changes in vehicle weight (wt) than engine size  (disp)
+
+
+```{r}
+lm.cyl <- lm(formula = mpg ~ disp + wt + cyl, data = mtcars)
+summary(lm.cyl)
+```
+R square has increased significantly however with a p value of 0533 tells us tht the fuel efficiency is more tied to combined features of vehicle weight and nunber of cylinders than it is to engine size 
+
+```{r}
+lm.wt.cyl <- lm(mpg ~ wt + cyl, data = mtcars)
+summary(lm.wt.cyl)
+```
+Here you have preserved the R squared while maintaining only relevant features
+```{r}
+lm.all <- lm(mpg ~ ., data = mtcars)
+summary(lm.all)
+```
+But here you have very little statistical value in the coefficients of the model, the standard error for each of the coefficients very high so pinning down an exact value for each coefficient is hard 
+**Better to approach these things from the bottom up**
+
+Mitigation of problems with machine learning algorithms: 
+
+Careful selection of features: Pick features to add to the model one at a time and cut the ones that are not statisticall significant by checking p value 
+
+Regularization: Keep all features but reduce coefficients of the less important onces to minimize impact on the model 
+
+# Regularization 
+You want to include as many features as possible, the more features the better so that you can explain the intricacies of the dataset. The catch is that the degree to which each features explains part of the model are regularization is applied can be quite different.
+- You can make your model more succinct and reduce the noise that may be coming from features with little impact on the model 
+- if we included all features from the previous example our model would look like: 
+  - mpg = 12.3 - 0.11cyl + 0.01disp - 0.02hp + 0.79drat - 3.72wt + 0.822qsec + 0.31vs + 2.42am + 0.66gear - 0.2carb (all from estimates!)
+
+*According to the linear equation, the fuel efficiency is most sensitive to the weight of the vehicle wt (3.72) given this one has the largest coefficient and therefore carries more weight but most of these are within an order of magnitude from each other 
+- Regularization would keep all featuress but the less improtant ones would have their coefficients scaled down much further 
+
+To utilize this regularization technique you call a type of regression model known as **lasso regression**:
+```{r}
+install.packages("lasso2")
+library(lasso2)
+
+```
+
+
+
+```{r}
+
+```
 
