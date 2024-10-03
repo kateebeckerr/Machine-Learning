@@ -1,0 +1,226 @@
+---
+title: "Applied Data with Notes"
+author: "Kate Becker"
+date: "2024-10-03"
+output: html_document
+---
+
+```{r}
+library(tidyverse)
+library(dplyr) # data manipulation
+library(ggplot2) # graphics
+#install.packages("visdata") # additional visualizations
+library(visdat)
+
+library(caret) # for ML
+library(recipes) # for feature engineering tasks
+
+# modeling process packages
+library(rsample)
+library(caret)
+
+#options(timeout = 600)  # Increase timeout to 10 minutes
+#install.packages("h2o")
+library(h2o)
+
+h2o.no_progress() # turns off h2o progress bars
+h2o.init() # launch h2o
+
+```
+
+# About H2o package:
+R interface for 'H2O', the scalable open source machine learning platform that offers parallelized implementations of many supervised and unsupervised machine learning algorithms such as Generalized Linear Models (GLM), Gradient Boosting Machines (including XGBoost), Random Forests, Deep Neural Networks (Deep Learning)
+
+## Use property attributes to predict the sale price of a home / supervised regression 
+
+```{r}
+install.packages("AmesHousing")
+library(AmesHousing)
+ames <- AmesHousing::make_ames()
+dim(ames)
+# response variable 
+head(ames$Sale_Price)
+view(ames)
+```
+
+
+## Using exploryee attributes to predict if they will attrit (leave the company) and the response variable is attrition (yes or no) / problem type: supervised binomial classification 
+
+```{r}
+library(rsample)
+install.packages("modeldata")
+library(modeldata)
+data("attrition")
+dim(attrition)
+head(attrition$Attrition)
+
+```
+
+## Image info for handwritten numbers originally presented to AT&T Lab to help build automatic mail sorting machines for USPS and has been used since early 1990 to compare machine learning performance on pattern recognition / supervised multinomial classification
+### Use attributes about the "darkness" of each of the 784 pixels in images of handwritten number to predict if the number is 0,1, .... or 9 
+
+```{r}
+#install.packages("dslabs")
+mnist <- dslabs::read_mnist()
+names(mnist)
+## [1] "train"
+dim(mnist$train$images) # images component within train subset of mnist data, returns dimensions of an array or matric
+head(mnist$train$labels) # returns first 6 elements by default so show the first 6 labels corresponding to the first 6 images 
+view(mnist)
+```
+
+# Grocery items anzd quantities purchased, each observation represents a single basket of good that were purchased together / unsupervised basket anaylsis, response variable is NA 
+## Use attributes of eaach baslet to identify common grouping of items purchased together 
+
+
+```{r}
+url <- "https://koalaverse.github.io/homlr/data/my_basket.csv"
+my_basket <- read_csv(url)
+dim(my_basket)
+view(my_basket)
+head(my_basket)
+
+```
+
+## Approaching ML correctly means spending our data on learning and validation procedures, pre processing the feature and target variables, minimizing data leakage, tuning hyperparameters, and assessing model performance 
+
+* Several variables in attrition data set  are rodered factors and H2o has no way of handling this datatype so must convert to unordered 
+
+```{r}
+h2o.no_progress()  # turn off h2o progress bars taht display when running functions 
+h2o.init()  # allows you to start using the ML capabilities
+
+#ames <- AmesHousing::make_ames() # creating a processed version of the ames housing data 
+ames.h2o <- as.h2o(ames) # converts dataset into a standard dataset for regression for ML
+churn <- attrition %>% 
+  mutate_if(is.ordered, .funs = factor, ordered = FALSE) # checking for any ordered favots (such as a ranking then converts any ordered factors into unordered factors which are treated as categorical without an order)
+churn.h2o <- as.h2o(churn)
+```
+
+# Splitting
+```{r}
+# Using base R 
+set.seed(123)
+index_1 <- sample(1:nrow(ames), round(nrow(ames) * 0.7))
+train_1 <- ames[index_1, ]
+test_1 <- ames[-index_1,] 
+
+# Using caret package 
+set.seed(123)
+index_2 <- createDataPartition(ames$Sale_Price, p = 0.7, list = FALSE)
+train_2 <- ames[index_2, ]
+test_2 <- ames[-index_2, ]
+
+# Using rsample package 
+set.seed(123)
+split_1 <- initial_split(ames, prop = 0.7)
+train_3 <- training(split_1)
+test_3 <- testing(split_1)
+
+# Using H2o package 
+split_2 <- h2o.splitFrame(ames.h2o, ratios = 0.7, seed = 123)
+train_4 <- split_2[[1]]
+train_4 <- split_2[[2]]
+                               
+```
+
+# Stratified Sampling 
+Good to use if we want the training and test sets to have similar Y distributions
+- Common with classification problems where response variable is imbalanced, 90% response variables with yes and 10% with no 
+- Okay for regression problems for data sets that have small sample sizes and where response variable deviates strongly from normality (positively skewed)  
+- with a continuous response variable stratified sampling with segment Y into quantiles and randomly select from each ensuring a balanced representation of response distribution in both training and test sets
+```{r}
+table(churn$Attrition) %>%
+  prop.table()
+
+# youll see a 83.8% no and 16.1% yes
+
+set.seed(1223)
+split_strat <- initial_split(churn, prop = 0.7, strata = "Attrition")
+train_strat <- training(split_strat)
+test_strat <- testing(split_strat)
+
+# consistent response ration between train and test 
+table(train_strat$Attrition) %>%
+  prop.table()
+
+table(test_strat$Attrition) %>%
+  prop.table()
+```
+# Class imbalances 
+Solutions: upsampling or downsampling 
+
+## Downsampling : 
+- balances the dataset by reducing the size of the abumdat classes to match frequencines in the least prevalent class, when quantity of data is sufficient, by keeping all samples in raree class and randomly selecting an equal number of samples in abundant class a balanced new dataset can be retrieved 
+- The reduced sample size reduces the computation burden imposed by further steps in ML process 
+
+## Upsampling 
+- When quantity of data is insufficient and it tries to balance the dataset by increasing the size of the rarer samples by using bootstrapping or repetition 
+- Can do a combination of these 
+
+# Many formula interfaces 
+```{r}
+
+# sales price as function of neighborhood and year sold 
+model_1 <- lm(Sale_Price ~ Neighborhood + Year_Sold,
+         data = ames)
+
+#Variables + interactions
+model_2 <- lm(Sale_Price ~ Neighborhood + Year_Sold + Neighborhood:Year_Sold, data = ames)
+
+# all predictors
+model_3 <- lm(Sale_Price ~., data = ames)
+
+# inline functions / transformations
+library(splines)
+
+model_4 <- lm(log10(Sale_Price) ~ ns(Longitude, df = 3) +
+           ns(Latitude, df = 3), data = ames)
+
+summary(model_1)
+```
+R squared: 0.5695 
+
+```{r}
+summary(model_2)
+```
+Adjust R squared: 0.5719 
+
+```{r}
+summary(model_3)
+```
+
+Adjust R squared: 0.93 !!!
+
+```{r}
+summary(model_4)
+# ns() creates a spline whih allows for smooth curves rather than forcing a strict linear or polynomial regression 
+```
+Transformations bad? adjusted r squared is 0.3598
+
+# Many engines
+```{r}
+# For example all below produce the same linear regression model output:
+lm_lm <- lm(Sale_Price ~ ., data = ames)
+lm_glm <- glm(Sale_Price ~ ., data = ames, family = gaussian)
+lm_caret <- train(Sale_Price ~ ., data = ames, method = "lm")
+
+# lm and glm are two different algorithm engines that can be used to fit the linear model and carettrain is a meta engine to apply almost any engine with methpd = 
+```
+# Resampling methods: 
+
+
+
+# Class imbalances 
+
+# Target Engineering 
+- Transforming response variable can lead to predictive improvement especially wih parametric models requires certain assumptions are met 
+- Ordinary linear regression models assume the prediction errors (and response) are normally distributed 
+- But when the prediction target has heavy tails (outliers) or is skewed in one direction the normal distribution does not hold 
+- a simple log transformation of the response can help 
+
+```{r}
+
+```
+
+

@@ -107,10 +107,7 @@ To utilize this regularization technique you call a type of regression model kno
 ```{r}
 install.packages("lasso2")
 library(lasso2)
-
 ```
-
-
 
 ```{r}
 
