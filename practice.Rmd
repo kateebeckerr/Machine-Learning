@@ -84,7 +84,7 @@ head(my_basket)
 
 ## Approaching ML correctly means spending our data on learning and validation procedures, pre processing the feature and target variables, minimizing data leakage, tuning hyperparameters, and assessing model performance 
 
-* Several variables in attrition data set  are rodered factors and H2o has no way of handling this datatype so must convert to unordered 
+* Several variables in attrition data set are rodered factors and H2o has no way of handling this datatype so must convert to unordered 
 
 ```{r}
 h2o.no_progress()  # turn off h2o progress bars taht display when running functions 
@@ -207,8 +207,9 @@ lm_caret <- train(Sale_Price ~ ., data = ames, method = "lm")
 
 # lm and glm are two different algorithm engines that can be used to fit the linear model and carettrain is a meta engine to apply almost any engine with methpd = 
 ```
-# Resampling methods: 
-
+# Resampling methods: repeatedly fit a model of interest to parts of the training data and test its performance on other parts 
+  - K fold cross validations
+  - bootstrapping 
 
 
 # Class imbalances 
@@ -219,8 +220,43 @@ lm_caret <- train(Sale_Price ~ ., data = ames, method = "lm")
 - But when the prediction target has heavy tails (outliers) or is skewed in one direction the normal distribution does not hold 
 - a simple log transformation of the response can help 
 
+
+# K fold cross validation 
+- divides training set into k groups (folds) of equal size, the model is fit on k - 1 folds an the remaining fold is used to compute model performance 
+- repeated k times and each time a different fold is treated as the validation set 
+- results in K estimates of the generalization error 
+- k fold CV estimate is computed by averaging the k test errors, providing us with an approx of the error we migth expect on unseen data 
+**5 folds, training data, five folds  1 gets a test rest are train and model performance on that fold is averaged with otehrs to assess average model performance**
+- as K gets larger the difference between the estimated performance and the true performance to be seen on test set will decrease but as k gets larger computational burdens increase 
+- a test found that k = 10 performed similarily to leave one out cross validation (k = n)
+- **k fold CV has higher variabiltiy than bootstrapping** 
+- for smaller datasets 10 fold cv repeated 5 or 10 times will improve accuracy of estimated performance and also provided an estiamte of its variability 
+
+```{r}
+h2o.cv = h2o.glm(x =x, y = y, training_frame = ames.h2o, nfolds = 10)
+
+```
+```{r}
+vfold_cv(ames, v = 10)
+# 10 fold cross validation 
+```
+
+# Bootstrapping 
+- A random sample of the data taken with replacement, bootstrap sample is the same size as the original data set from which it was constructed 
+- will contain approx the same distribution of values as original dataset 
+- likely to include duplicate values 
+- on average about 63% of the original sample ends up in any particular bootstrap sample 
+- the original observations not contained in a particular bootstrap sample are cnsdiered out of bag, this if often used in random forests
+- since observations are replicated in bootstrapping there tends to be less variability in error measured compared to k fold vcv but can increase bias of error estimate and bad for smaller data sets but for larger data sets this isnt really of concern 
+
+```{r}
+bootstraps(ames, times = 10)
+```
+- more an internal resampling procedure that is naturally built into certain ML algorithms 
+
+# Bias Variance trade off 
+Prediction errors can be decomposed into two important subcomponents: error due to bias and error due to variance, often a tradeoff between a mdoels ability to minimize bias and variance, understanding how different sources of error lead to bias and variance helps us improve data fitting process results in more accurate models 
 ```{r}
 
 ```
-
 
